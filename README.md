@@ -1,6 +1,6 @@
 # Laravel Microsoft SSO
 
-A Laravel package for easy Microsoft SSO integration using JWT token authentication with an external Microsoft login service.
+A Laravel package for easy Microsoft SSO integration with an external Microsoft login service.
 
 ## Installation
 
@@ -16,11 +16,12 @@ A Laravel package for easy Microsoft SSO integration using JWT token authenticat
 
 3. **Configure your environment variables in `.env`:**
    ```env
-   # Microsoft Login Service Configuration
-   MICROSOFT_LOGIN_URL=http://localhost:8000
-   MICROSOFT_SSO_ISSUER=http://localhost:8000
-   MICROSOFT_SSO_JWKS_URI=http://localhost:8000/.well-known/jwks.json
-   MICROSOFT_SSO_AUDIENCE=your-app-name
+   # Microsoft Login Service (microsoft-login-service)
+   # Set these to match the service's APP_URL and endpoints
+   MICROSOFT_LOGIN_URL=http://localhost:8080
+   MICROSOFT_SSO_ISSUER=http://localhost:8080
+   MICROSOFT_SSO_JWKS_URI=http://localhost:8080/.well-known/jwks.json
+   MICROSOFT_SSO_AUDIENCE=your-app-identifier
    MICROSOFT_SSO_REDIRECT=/dashboard
    ```
 
@@ -76,7 +77,7 @@ All configuration options in `config/microsoft-sso.php`:
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `login_service_url` | `http://localhost:8000` | URL of your Microsoft login service |
+| `login_service_url` | `http://localhost:8080` | URL of your Microsoft login service |
 | `issuer` | Same as login_service_url | Expected JWT issuer |
 | `jwks_uri` | `{login_service_url}/.well-known/jwks.json` | JWKS endpoint |
 | `audience` | App name | Expected JWT audience |
@@ -91,10 +92,42 @@ All configuration options in `config/microsoft-sso.php`:
 
 ## Microsoft Login Service
 
-This package requires a separate Microsoft Login Service (another Laravel app) that:
-- Handles OAuth with Microsoft
-- Issues JWT tokens
-- Provides JWKS endpoint
+This package works with a companion service: Microsoft Login Service.
+- Repo: https://github.com/dcplibrary/microsoft-login-service
+- Purpose: Centralized Microsoft (Entra ID) OAuth that issues short‑lived RS256 JWTs and exposes JWKS for validation.
+- Key endpoints used by this package:
+  - GET /login/microsoft (starts OAuth; accepts returnTo)
+  - GET /.well-known/jwks.json (public keys for JWT validation)
+  - GET /sso/forward (mints token then forwards to your app’s /microsoft-sso/callback)
+
+Quick setup (development):
+```bash
+# 1) Clone and configure
+git clone https://github.com/dcplibrary/microsoft-login-service.git
+cd microsoft-login-service
+cp .env.example .env
+
+# 2) Set required Microsoft Entra ID values in .env
+# MICROSOFT_CLIENT_ID=...
+# MICROSOFT_CLIENT_SECRET=...
+# MICROSOFT_TENANT_ID=...
+# MICROSOFT_REDIRECT_URI=http://localhost:8080/auth/callback
+
+# 3) Start the service (SQLite by default)
+docker-compose up -d
+
+# 4) Verify it’s running
+curl http://localhost:8080/health
+curl http://localhost:8080/.well-known/jwks.json
+```
+
+Then set in your client app (this package):
+```env
+MICROSOFT_LOGIN_URL=http://localhost:8080
+MICROSOFT_SSO_ISSUER=http://localhost:8080
+MICROSOFT_SSO_JWKS_URI=http://localhost:8080/.well-known/jwks.json
+MICROSOFT_SSO_AUDIENCE=your-app-identifier
+```
 
 ## License
 
