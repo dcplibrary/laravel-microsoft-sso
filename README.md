@@ -1,3 +1,4 @@
+[![Release](https://github.com/dcplibrary/laravel-microsoft-sso/actions/workflows/release.yml/badge.svg)](https://github.com/dcplibrary/laravel-microsoft-sso/actions/workflows/release.yml)
 # Laravel Microsoft SSO
 
 A Laravel package for easy Microsoft SSO integration with an external Microsoft login service.
