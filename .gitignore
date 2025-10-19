@@ -4,3 +4,10 @@ composer.lock
 .DS_Store
 .idea/
 .vscode/
+
+# npm
+node_modules/
+package-lock.json
+
+# Semantic-release
+CHANGELOG.md

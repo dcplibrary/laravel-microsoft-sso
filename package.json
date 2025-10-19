@@ -1,0 +1,22 @@
+{
+  "name": "laravel-microsoft-sso",
+  "version": "1.0.0",
+  "description": "Laravel package providing Microsoft SSO via an external login service and JWT verification",
+  "private": true,
+  "scripts": {
+    "audit-fix": "npm audit fix",
+    "semantic-release": "semantic-release"
+  },
+  "keywords": ["laravel", "microsoft", "sso", "jwt"],
+  "license": "MIT",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.0",
+    "@semantic-release/release-notes-generator": "^14.0.1",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
+    "semantic-release": "^24.2.0"
+  },
+  "dependencies": {}
+}
