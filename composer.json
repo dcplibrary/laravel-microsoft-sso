@@ -1,0 +1,41 @@
+{
+    "name": "dcplibrary/laravel-microsoft-sso",
+    "description": "Laravel package for Microsoft SSO integration with JWT token authentication",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "DC Public Library",
+            "email": "blashbrook@dcplibrary.org"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0",
+        "illuminate/routing": "^10.0|^11.0",
+        "firebase/php-jwt": "^6.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DcpLibrary\\MicrosoftSso\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DcpLibrary\\MicrosoftSso\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "DcpLibrary\\MicrosoftSso\\Providers\\MicrosoftSsoServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
