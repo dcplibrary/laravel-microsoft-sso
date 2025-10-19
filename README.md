@@ -84,7 +84,7 @@ All configuration options in `config/microsoft-sso.php`:
 
 ## Requirements
 
-- Laravel 10.x or 11.x
+- Laravel 10.x or higher
 - PHP 8.1+
 - External Microsoft Login Service (separate Laravel app)
 - `firebase/php-jwt` package (automatically installed)
