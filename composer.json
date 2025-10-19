@@ -16,7 +16,6 @@
         "firebase/php-jwt": "^6.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^9.0|^10.0",
         "phpunit/phpunit": "^10.0"
     },
     "autoload": {
