@@ -13,7 +13,15 @@
         "php": "^8.3",
         "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
         "illuminate/routing": "^9.0|^10.0|^11.0|^12.0",
+        "illuminate/http": "^9.0|^10.0|^11.0|^12.0",
         "firebase/php-jwt": "^6.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0",
+        "phpunit/phpunit": "^11.0",
+        "mockery/mockery": "^1.6",
+        "phpstan/phpstan": "^1.10",
+        "laravel/pint": "^1.0"
     },
     "autoload": {
         "psr-4": {
@@ -31,6 +39,18 @@
                 "DcpLibrary\\MicrosoftSso\\Providers\\MicrosoftSsoServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "phpstan": "vendor/bin/phpstan analyse",
+        "pint": "vendor/bin/pint",
+        "pint-test": "vendor/bin/pint --test",
+        "ci": [
+            "@pint-test",
+            "@phpstan",
+            "@test"
+        ]
     },
     "minimum-stability": "dev",
     "prefer-stable": true

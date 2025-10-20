@@ -5,6 +5,9 @@ namespace DcpLibrary\MicrosoftSso\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Routing\Router;
 use DcpLibrary\MicrosoftSso\Http\Middleware\EnsureSso;
+use DcpLibrary\MicrosoftSso\Http\Middleware\EntraAuth;
+use DcpLibrary\MicrosoftSso\Console\TestSsoCommand;
+use DcpLibrary\MicrosoftSso\Services\JwtService;
 
 class MicrosoftSsoServiceProvider extends ServiceProvider
 {
@@ -12,6 +15,16 @@ class MicrosoftSsoServiceProvider extends ServiceProvider
     {
         // Merge package config
         $this->mergeConfigFrom(__DIR__ . '/../../config/microsoft-sso.php', 'microsoft-sso');
+        
+        // Register JWT service as a singleton
+        $this->app->singleton(JwtService::class);
+        
+        // Register console commands
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                TestSsoCommand::class,
+            ]);
+        }
     }
 
     public function boot(Router $router)
@@ -32,7 +45,8 @@ class MicrosoftSsoServiceProvider extends ServiceProvider
         // Load routes
         $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');
 
-        // Register middleware alias
+        // Register middleware aliases
         $router->aliasMiddleware('sso.auto', EnsureSso::class);
+        $router->aliasMiddleware('entra.auth', EntraAuth::class);
     }
 }

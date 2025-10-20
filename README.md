@@ -3,6 +3,8 @@
 
 A Laravel package for easy Microsoft SSO integration with an external Microsoft login service.
 
+📖 **[Complete Integration Guide](LARAVEL_MICROSOFT_SSO_GUIDE.md)** - Comprehensive setup, troubleshooting, and production deployment guide
+
 ## Installation
 
 1. **Install via Composer:**
@@ -28,9 +30,9 @@ A Laravel package for easy Microsoft SSO integration with an external Microsoft 
 
 ## Usage
 
-### Protecting Routes with SSO
+### 1. Protecting Web Routes with SSO
 
-Use the `sso.auto` middleware on routes that require authentication:
+Use the `sso.auto` middleware for web routes that require authentication:
 
 ```php
 use Illuminate\Support\Facades\Route;
@@ -40,13 +42,40 @@ Route::middleware(['sso.auto'])->group(function () {
         return view('dashboard');
     });
     
-    Route::get('/protected', function () {
+    Route::get('/profile', function () {
         return response()->json(['user' => auth()->user()]);
     });
 });
 ```
 
-### Manual Login Route
+### 2. Protecting API Routes with JWT
+
+Use the `entra.auth` middleware for API routes that need stateless JWT authentication:
+
+```php
+// API routes with JWT validation
+Route::middleware(['entra.auth'])->prefix('api')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return response()->json([
+            'claims' => $request->attributes->get('entra_claims'),
+            'email' => $request->attributes->get('entra_user_email'),
+            'name' => $request->attributes->get('entra_user_name'),
+        ]);
+    });
+    
+    Route::get('/protected-data', function (Request $request) {
+        $userEmail = $request->attributes->get('entra_user_email');
+        return response()->json(['data' => "Hello {$userEmail}"]);
+    });
+});
+```
+
+For API routes, clients must include the JWT token in the Authorization header:
+```bash
+curl -H "Authorization: Bearer your-jwt-token" https://yourapp.com/api/user
+```
+
+### 3. Manual Login Route
 
 The package automatically provides login routes, but you can link to them:
 
@@ -55,7 +84,59 @@ The package automatically provides login routes, but you can link to them:
 return redirect()->route('microsoft-sso.login');
 ```
 
-### Customizing Views
+### 4. Testing Configuration
+
+Test your SSO setup with the built-in command:
+
+```bash
+php artisan microsoft-sso:test
+```
+
+This will verify:
+- Configuration values
+- Microsoft Login Service connectivity
+- JWKS endpoint availability
+- Key format validation
+
+### 5. Using the JWT Service
+
+Inject the JWT service for advanced token operations:
+
+```php
+use DcpLibrary\MicrosoftSso\Services\JwtService;
+
+class ApiController extends Controller
+{
+    public function validateToken(Request $request, JwtService $jwtService)
+    {
+        $token = $jwtService->extractFromAuthHeader($request->header('Authorization'));
+        
+        if (!$token) {
+            return response()->json(['error' => 'No token provided'], 401);
+        }
+        
+        try {
+            $claims = $jwtService->validateToken($token);
+            return response()->json(['valid' => true, 'claims' => $claims]);
+        } catch (\Exception $e) {
+            return response()->json(['valid' => false, 'error' => $e->getMessage()], 401);
+        }
+    }
+    
+    public function debugToken(Request $request, JwtService $jwtService)
+    {
+        $token = $request->input('token');
+        
+        return response()->json([
+            'header' => $jwtService->getHeaderWithoutValidation($token),
+            'claims' => $jwtService->getClaimsWithoutValidation($token),
+            'expired' => $jwtService->isTokenExpired($token),
+        ]);
+    }
+}
+```
+
+### 6. Customizing Views
 
 Publish the views to customize the login page:
 
@@ -72,6 +153,20 @@ Views will be published to `resources/views/vendor/microsoft-sso/`
 3. **After Microsoft authentication** → Service issues JWT and redirects back
 4. **Package validates JWT** → Creates/logs in user and redirects to dashboard
 
+## Middleware Options
+
+### `sso.auto` Middleware
+- **Purpose**: Web route protection with user sessions
+- **Behavior**: Redirects unauthenticated users to login page
+- **Usage**: Traditional web applications
+- **Session**: Creates Laravel user sessions
+
+### `entra.auth` Middleware
+- **Purpose**: API route protection with JWT tokens
+- **Behavior**: Returns 401 JSON response for invalid/missing tokens
+- **Usage**: Stateless API endpoints
+- **Session**: No session creation, stores claims in request attributes
+
 ## Configuration Options
 
 All configuration options in `config/microsoft-sso.php`:
@@ -83,13 +178,45 @@ All configuration options in `config/microsoft-sso.php`:
 | `jwks_uri` | `{login_service_url}/.well-known/jwks.json` | JWKS endpoint |
 | `audience` | App name | Expected JWT audience |
 | `redirect_after_login` | `/dashboard` | Where to redirect after login |
+| `jwks_cache_ttl` | `3600` | JWKS cache TTL in seconds |
+
+## Features
+
+✅ **Web Authentication**: Traditional session-based authentication for web routes  
+✅ **API Authentication**: Stateless JWT authentication for API endpoints  
+✅ **Automatic User Creation**: Creates users from JWT claims automatically  
+✅ **JWKS Caching**: Intelligent caching of JWT validation keys  
+✅ **Configuration Testing**: Built-in command to test your setup  
+✅ **Error Handling**: Comprehensive exception handling with detailed messages  
+✅ **Laravel Integration**: Native Laravel service provider with middleware  
+✅ **Security**: Validates JWT signatures, expiry, issuer, and audience  
 
 ## Requirements
 
-- Laravel 10.x or higher
-- PHP 8.1+
+- Laravel 11.x or 12.x
+- PHP 8.3+
 - External Microsoft Login Service (separate Laravel app)
 - `firebase/php-jwt` package (automatically installed)
+
+## Testing
+
+Run the test suite:
+
+```bash
+composer test
+```
+
+Run static analysis:
+
+```bash
+composer phpstan
+```
+
+Check code style:
+
+```bash
+composer pint
+```
 
 ## Microsoft Login Service
 
@@ -129,6 +256,11 @@ MICROSOFT_SSO_ISSUER=http://localhost:8080
 MICROSOFT_SSO_JWKS_URI=http://localhost:8080/.well-known/jwks.json
 MICROSOFT_SSO_AUDIENCE=your-app-identifier
 ```
+
+## Documentation
+
+- **[Complete Integration Guide](LARAVEL_MICROSOFT_SSO_GUIDE.md)** - Comprehensive guide with architecture, setup, testing, troubleshooting, and production deployment
+- **[Package README](README.md)** - Quick start and basic usage (this file)
 
 ## License
 
